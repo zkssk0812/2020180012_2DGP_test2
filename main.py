@@ -1,4 +1,5 @@
 from pico2d import *
+from Grass import Grass
 
 
 def handle_events():
@@ -11,9 +12,10 @@ def handle_events():
 
 
 def reset_world():
-    global running, world
+    global running, grass, world
     running = True
-    world = []
+    grass = Grass()
+    world = [grass]
 
 
 def update_world():
