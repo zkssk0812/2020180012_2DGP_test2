@@ -1,4 +1,4 @@
-from pico2d import load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_RIGHT, SDLK_LEFT
+from pico2d import load_image, clamp, SDL_KEYDOWN, SDL_KEYUP, SDLK_RIGHT, SDLK_LEFT
 from transitions import Machine
 
 GROUND_Y = 90
@@ -37,8 +37,10 @@ class Run:
 
     @staticmethod
     def do(boy):
+        boy.face_dir = boy.dir
+        boy.action = 1 if boy.face_dir == 1 else 0
         boy.frame = (boy.frame + 1) % FRAME_COUNT
-        boy.x += boy.dir * RUN_SPEED
+        boy.x = clamp(50, boy.x + boy.dir * RUN_SPEED, 750)
 
     @staticmethod
     def draw(boy):
