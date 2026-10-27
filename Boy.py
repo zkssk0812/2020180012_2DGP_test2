@@ -1,4 +1,4 @@
-from pico2d import load_image, clamp, SDL_KEYDOWN, SDL_KEYUP, SDLK_RIGHT, SDLK_LEFT, SDLK_a
+from pico2d import load_image, clamp, get_time, SDL_KEYDOWN, SDL_KEYUP, SDLK_RIGHT, SDLK_LEFT, SDLK_a
 from transitions import Machine
 
 GROUND_Y = 90
@@ -6,6 +6,7 @@ FRAME_COUNT = 8
 RUN_SPEED = 5
 AUTO_RUN_SPEED = 10
 AUTO_RUN_SCALE = 2
+AUTO_RUN_DURATION = 5.0
 
 
 class Idle:
@@ -52,6 +53,7 @@ class Run:
 class AutoRun:
     @staticmethod
     def enter(boy):
+        boy.start_time = get_time()
         boy.auto_dir = boy.face_dir
         boy.action = 1 if boy.auto_dir == 1 else 0
 
@@ -68,6 +70,8 @@ class AutoRun:
             boy.x = clamp(100, boy.x, 700)
             boy.auto_dir *= -1
             boy.action = 1 if boy.auto_dir == 1 else 0
+        if get_time() - boy.start_time >= AUTO_RUN_DURATION:
+            boy.time_out()
 
     @staticmethod
     def draw(boy):
@@ -83,6 +87,7 @@ TRANSITIONS = [
     {'trigger': 'run', 'source': 'Idle', 'dest': 'Run'},
     {'trigger': 'stop', 'source': 'Run', 'dest': 'Idle'},
     {'trigger': 'auto_run', 'source': ['Idle', 'Run'], 'dest': 'AutoRun'},
+    {'trigger': 'time_out', 'source': 'AutoRun', 'dest': 'Idle'},
 ]
 
 
@@ -94,6 +99,7 @@ class Boy:
         self.dir = 0
         self.face_dir = 1
         self.auto_dir = 1
+        self.start_time = 0.0
         self.image = load_image('animation_sheet.png')
         self.machine = Machine(
             model=self,
