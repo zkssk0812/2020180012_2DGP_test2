@@ -4,6 +4,8 @@ from transitions import Machine
 GROUND_Y = 90
 FRAME_COUNT = 8
 RUN_SPEED = 5
+AUTO_RUN_SPEED = 10
+AUTO_RUN_SCALE = 2
 
 
 class Idle:
@@ -60,15 +62,19 @@ class AutoRun:
     @staticmethod
     def do(boy):
         boy.frame = (boy.frame + 1) % FRAME_COUNT
-        boy.x += boy.auto_dir * RUN_SPEED
-        if boy.x <= 50 or boy.x >= 750:
-            boy.x = clamp(50, boy.x, 750)
+        boy.x += boy.auto_dir * AUTO_RUN_SPEED
+        # 크기가 커졌으므로 화면 끝에서 50 더 안쪽에서 방향을 바꾼다
+        if boy.x <= 100 or boy.x >= 700:
+            boy.x = clamp(100, boy.x, 700)
             boy.auto_dir *= -1
             boy.action = 1 if boy.auto_dir == 1 else 0
 
     @staticmethod
     def draw(boy):
-        boy.image.clip_draw(boy.frame * 100, boy.action * 100, 100, 100, boy.x, GROUND_Y)
+        size = 100 * AUTO_RUN_SCALE
+        # 발이 잔디 위에 그대로 있도록 늘어난 높이의 절반만큼 올려서 그린다
+        boy.image.clip_draw(boy.frame * 100, boy.action * 100, 100, 100,
+                            boy.x, GROUND_Y + (size - 100) // 2, size, size)
 
 
 STATES = {'Idle': Idle, 'Run': Run, 'AutoRun': AutoRun}
