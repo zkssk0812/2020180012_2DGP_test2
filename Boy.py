@@ -84,7 +84,7 @@ class AutoRun:
 STATES = {'Idle': Idle, 'Run': Run, 'AutoRun': AutoRun}
 
 TRANSITIONS = [
-    {'trigger': 'run', 'source': 'Idle', 'dest': 'Run'},
+    {'trigger': 'run', 'source': ['Idle', 'AutoRun'], 'dest': 'Run'},
     {'trigger': 'stop', 'source': 'Run', 'dest': 'Idle'},
     {'trigger': 'auto_run', 'source': ['Idle', 'Run'], 'dest': 'AutoRun'},
     {'trigger': 'time_out', 'source': 'AutoRun', 'dest': 'Idle'},
