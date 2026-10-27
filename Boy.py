@@ -1,7 +1,9 @@
 from pico2d import load_image, clamp, get_time, SDL_KEYDOWN, SDL_KEYUP, SDLK_RIGHT, SDLK_LEFT, SDLK_a
 from transitions import Machine
 
+CANVAS_WIDTH = 800
 GROUND_Y = 90
+FRAME_SIZE = 100
 FRAME_COUNT = 8
 RUN_SPEED = 5
 AUTO_RUN_SPEED = 10
@@ -25,7 +27,8 @@ class Idle:
 
     @staticmethod
     def draw(boy):
-        boy.image.clip_draw(boy.frame * 100, boy.action * 100, 100, 100, boy.x, GROUND_Y)
+        boy.image.clip_draw(boy.frame * FRAME_SIZE, boy.action * FRAME_SIZE, FRAME_SIZE, FRAME_SIZE,
+                            boy.x, GROUND_Y)
 
 
 class Run:
@@ -43,11 +46,13 @@ class Run:
         boy.face_dir = boy.dir
         boy.action = 1 if boy.face_dir == 1 else 0
         boy.frame = (boy.frame + 1) % FRAME_COUNT
-        boy.x = clamp(50, boy.x + boy.dir * RUN_SPEED, 750)
+        half = FRAME_SIZE // 2
+        boy.x = clamp(half, boy.x + boy.dir * RUN_SPEED, CANVAS_WIDTH - half)
 
     @staticmethod
     def draw(boy):
-        boy.image.clip_draw(boy.frame * 100, boy.action * 100, 100, 100, boy.x, GROUND_Y)
+        boy.image.clip_draw(boy.frame * FRAME_SIZE, boy.action * FRAME_SIZE, FRAME_SIZE, FRAME_SIZE,
+                            boy.x, GROUND_Y)
 
 
 class AutoRun:
@@ -65,9 +70,10 @@ class AutoRun:
     def do(boy):
         boy.frame = (boy.frame + 1) % FRAME_COUNT
         boy.x += boy.auto_dir * AUTO_RUN_SPEED
-        # 크기가 커졌으므로 화면 끝에서 50 더 안쪽에서 방향을 바꾼다
-        if boy.x <= 100 or boy.x >= 700:
-            boy.x = clamp(100, boy.x, 700)
+        # 커진 크기의 절반만큼 화면 끝 안쪽에서 방향을 바꾼다
+        half = FRAME_SIZE * AUTO_RUN_SCALE // 2
+        if boy.x <= half or boy.x >= CANVAS_WIDTH - half:
+            boy.x = clamp(half, boy.x, CANVAS_WIDTH - half)
             boy.auto_dir *= -1
             boy.action = 1 if boy.auto_dir == 1 else 0
         if get_time() - boy.start_time >= AUTO_RUN_DURATION:
@@ -75,10 +81,10 @@ class AutoRun:
 
     @staticmethod
     def draw(boy):
-        size = 100 * AUTO_RUN_SCALE
+        size = FRAME_SIZE * AUTO_RUN_SCALE
         # 발이 잔디 위에 그대로 있도록 늘어난 높이의 절반만큼 올려서 그린다
-        boy.image.clip_draw(boy.frame * 100, boy.action * 100, 100, 100,
-                            boy.x, GROUND_Y + (size - 100) // 2, size, size)
+        boy.image.clip_draw(boy.frame * FRAME_SIZE, boy.action * FRAME_SIZE, FRAME_SIZE, FRAME_SIZE,
+                            boy.x, GROUND_Y + (size - FRAME_SIZE) // 2, size, size)
 
 
 STATES = {'Idle': Idle, 'Run': Run, 'AutoRun': AutoRun}
@@ -93,7 +99,7 @@ TRANSITIONS = [
 
 class Boy:
     def __init__(self):
-        self.x = 400
+        self.x = CANVAS_WIDTH // 2
         self.frame = 0
         self.action = 3
         self.dir = 0
